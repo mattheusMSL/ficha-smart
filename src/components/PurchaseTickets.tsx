@@ -81,7 +81,7 @@ export const PurchaseTickets = () => {
         </div>
         <div className="flex items-center justify-between">
           <span className="text-sm text-gray-500">
-            Total: R$ {(quantity * 3.5).toFixed(2)}
+            Total: R$ {(quantity * 4.00).toFixed(2)}
           </span>
           <Button onClick={handlePurchase} className="bg-primary hover:bg-primary/90">
             Purchase Tickets
