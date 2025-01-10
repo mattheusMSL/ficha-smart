@@ -8,6 +8,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
@@ -16,13 +17,14 @@ export const PurchaseTickets = () => {
   const [quantity, setQuantity] = useState(1);
   const [showPaymentDialog, setShowPaymentDialog] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<string>("");
+  const [isProcessing, setIsProcessing] = useState(false);
   const { toast } = useToast();
 
   const handlePurchase = () => {
     setShowPaymentDialog(true);
   };
 
-  const handlePaymentSubmit = () => {
+  const handlePaymentSubmit = async () => {
     if (!paymentMethod) {
       toast({
         title: "Error",
@@ -32,12 +34,29 @@ export const PurchaseTickets = () => {
       return;
     }
 
-    // Here you would integrate with your payment processing system
-    toast({
-      title: "Purchase Successful",
-      description: `You have purchased ${quantity} tickets using ${paymentMethod}`,
-    });
-    setShowPaymentDialog(false);
+    setIsProcessing(true);
+
+    try {
+      // Simulate payment processing
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      // Here you would integrate with your payment processing system
+      // If payment is successful:
+      toast({
+        title: "Purchase Successful",
+        description: `You have purchased ${quantity} tickets using ${paymentMethod}`,
+      });
+      setShowPaymentDialog(false);
+      setPaymentMethod("");
+    } catch (error) {
+      toast({
+        title: "Payment Failed",
+        description: "There was an error processing your payment. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   return (
@@ -74,6 +93,9 @@ export const PurchaseTickets = () => {
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Select Payment Method</DialogTitle>
+            <DialogDescription>
+              Choose your preferred payment method to complete the purchase.
+            </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <RadioGroup
@@ -95,8 +117,11 @@ export const PurchaseTickets = () => {
               </div>
             </RadioGroup>
             <div className="flex justify-end">
-              <Button onClick={handlePaymentSubmit}>
-                Confirm Payment
+              <Button 
+                onClick={handlePaymentSubmit} 
+                disabled={isProcessing}
+              >
+                {isProcessing ? "Processing..." : "Confirm Payment"}
               </Button>
             </div>
           </div>
