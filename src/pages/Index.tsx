@@ -1,6 +1,7 @@
 import { StudentProfile } from "@/components/StudentProfile";
 import { TicketCard } from "@/components/TicketCard";
 import { PurchaseTickets } from "@/components/PurchaseTickets";
+import { LoginForm } from "@/components/LoginForm";
 import { motion } from "framer-motion";
 
 const Index = () => {
@@ -27,6 +28,13 @@ const Index = () => {
             Manage your meal tickets digitally
           </p>
         </motion.div>
+
+        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">
+            Login
+          </h2>
+          <LoginForm />
+        </div>
 
         <StudentProfile name={studentData.name} ra={studentData.ra} />
         
