@@ -5,17 +5,20 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
+import { Loader2 } from "lucide-react";
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsLoading(true);
     
     if (!username || !password) {
       toast({
@@ -23,6 +26,7 @@ const Auth = () => {
         description: "Please fill in all fields",
         variant: "destructive",
       });
+      setIsLoading(false);
       return;
     }
 
@@ -32,15 +36,42 @@ const Auth = () => {
         description: "Passwords do not match",
         variant: "destructive",
       });
+      setIsLoading(false);
       return;
     }
 
-    // Mock authentication - replace with real auth later
-    toast({
-      title: isLogin ? "Login Successful" : "Account Created",
-      description: isLogin ? "Welcome back!" : "Your account has been created",
-    });
-    navigate("/");
+    try {
+      // Mock authentication delay
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      // Mock user check - in a real app, this would be an API call
+      const userExists = username === "test@example.com";
+      
+      if (isLogin && !userExists) {
+        toast({
+          title: "Error",
+          description: "User not found",
+          variant: "destructive",
+        });
+        setIsLoading(false);
+        return;
+      }
+
+      toast({
+        title: isLogin ? "Login Successful" : "Account Created",
+        description: isLogin ? "Welcome back!" : "Your account has been created",
+      });
+      
+      navigate("/index");
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "An error occurred during authentication",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -71,6 +102,7 @@ const Auth = () => {
               onChange={(e) => setUsername(e.target.value)}
               placeholder="Enter your username"
               className="border-[#004d7a]/20 focus:border-[#004d7a] focus:ring-[#004d7a]"
+              disabled={isLoading}
             />
           </div>
 
@@ -83,6 +115,7 @@ const Auth = () => {
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Enter your password"
               className="border-[#004d7a]/20 focus:border-[#004d7a] focus:ring-[#004d7a]"
+              disabled={isLoading}
             />
           </div>
 
@@ -96,6 +129,7 @@ const Auth = () => {
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 placeholder="Confirm your password"
                 className="border-[#004d7a]/20 focus:border-[#004d7a] focus:ring-[#004d7a]"
+                disabled={isLoading}
               />
             </div>
           )}
@@ -103,8 +137,16 @@ const Auth = () => {
           <Button 
             type="submit" 
             className="w-full bg-[#60d394] hover:bg-[#60d394]/90 text-white transition-colors"
+            disabled={isLoading}
           >
-            {isLogin ? "Sign In" : "Sign Up"}
+            {isLoading ? (
+              <span className="flex items-center justify-center">
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                {isLogin ? "Signing in..." : "Creating account..."}
+              </span>
+            ) : (
+              isLogin ? "Sign In" : "Sign Up"
+            )}
           </Button>
         </form>
 
@@ -112,6 +154,7 @@ const Auth = () => {
           <button
             onClick={() => setIsLogin(!isLogin)}
             className="text-sm text-[#004d7a] hover:text-[#004d7a]/80 hover:underline transition-colors"
+            disabled={isLoading}
           >
             {isLogin
               ? "Don't have an account? Sign up"
