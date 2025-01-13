@@ -1,7 +1,6 @@
 import { StudentProfile } from "@/components/StudentProfile";
 import { TicketCard } from "@/components/TicketCard";
 import { PurchaseTickets } from "@/components/PurchaseTickets";
-import { UserProfile } from "@/components/UserProfile";
 import { motion } from "framer-motion";
 
 const Index = () => {
@@ -11,11 +10,6 @@ const Index = () => {
     ra: "RA123456",
     tickets: 5,
     lastPurchase: "2024-02-20",
-  };
-
-  const userData = {
-    username: "João Silva",
-    email: "joao.silva@example.com",
   };
 
   return (
@@ -33,11 +27,6 @@ const Index = () => {
             Manage your meal tickets digitally
           </p>
         </motion.div>
-
-        <UserProfile 
-          username={userData.username} 
-          email={userData.email} 
-        />
         
         <StudentProfile name={studentData.name} ra={studentData.ra} />
         
