@@ -44,17 +44,17 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-[#f5f5f5] flex items-center justify-center p-4">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-md bg-white rounded-lg shadow-sm border border-gray-100 p-6 space-y-6"
+        className="w-full max-w-md bg-white rounded-lg shadow-lg border border-[#004d7a]/10 p-8 space-y-6"
       >
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900">
+          <h1 className="text-2xl font-bold text-[#333333]">
             {isLogin ? "Welcome Back" : "Create Account"}
           </h1>
-          <p className="text-sm text-gray-500 mt-1">
+          <p className="text-sm text-[#333333]/70 mt-1">
             {isLogin
               ? "Sign in to access your account"
               : "Sign up for a new account"}
@@ -63,41 +63,47 @@ const Auth = () => {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="username">Username</Label>
+            <Label htmlFor="username" className="text-[#333333]">Username</Label>
             <Input
               id="username"
               type="text"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               placeholder="Enter your username"
+              className="border-[#004d7a]/20 focus:border-[#004d7a] focus:ring-[#004d7a]"
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
+            <Label htmlFor="password" className="text-[#333333]">Password</Label>
             <Input
               id="password"
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Enter your password"
+              className="border-[#004d7a]/20 focus:border-[#004d7a] focus:ring-[#004d7a]"
             />
           </div>
 
           {!isLogin && (
             <div className="space-y-2">
-              <Label htmlFor="confirmPassword">Confirm Password</Label>
+              <Label htmlFor="confirmPassword" className="text-[#333333]">Confirm Password</Label>
               <Input
                 id="confirmPassword"
                 type="password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 placeholder="Confirm your password"
+                className="border-[#004d7a]/20 focus:border-[#004d7a] focus:ring-[#004d7a]"
               />
             </div>
           )}
 
-          <Button type="submit" className="w-full">
+          <Button 
+            type="submit" 
+            className="w-full bg-[#60d394] hover:bg-[#60d394]/90 text-white transition-colors"
+          >
             {isLogin ? "Sign In" : "Sign Up"}
           </Button>
         </form>
@@ -105,7 +111,7 @@ const Auth = () => {
         <div className="text-center">
           <button
             onClick={() => setIsLogin(!isLogin)}
-            className="text-sm text-primary hover:underline"
+            className="text-sm text-[#004d7a] hover:text-[#004d7a]/80 hover:underline transition-colors"
           >
             {isLogin
               ? "Don't have an account? Sign up"
