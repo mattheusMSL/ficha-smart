@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { StudentProfile } from "@/components/StudentProfile";
 import { TicketCard } from "@/components/TicketCard";
 import { PurchaseTickets } from "@/components/PurchaseTickets";
@@ -6,11 +7,14 @@ import { motion } from "framer-motion";
 const Index = () => {
   // Mock data - would come from API in real app
   const studentData = {
-    name: "João Silva",
-    ra: "RA123456",
-    tickets: 5,
+    name: "João da Silva",
+    ra: "98123456",
+    tickets: 0,
     lastPurchase: "2024-02-20",
+    action: true, // Active status
   };
+
+  const [ticketCount, setTicketCount] = useState(studentData.tickets);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -29,17 +33,21 @@ const Index = () => {
         </motion.div>
 
         <StudentProfile name={studentData.name} ra={studentData.ra} />
-        
-        <TicketCard 
-          count={studentData.tickets} 
-          lastPurchase={studentData.lastPurchase} 
+
+        <TicketCard
+          count={ticketCount} // Pass ticketCount here
+          lastPurchase={studentData.lastPurchase}
+          active={studentData.action} // Passing isActive prop here
         />
 
         <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
           <h2 className="text-lg font-semibold text-gray-900 mb-4">
             Purchase Tickets
           </h2>
-          <PurchaseTickets />
+          <PurchaseTickets
+            isActive={studentData.action}
+            setTicketCount={setTicketCount}
+          />
         </div>
       </div>
     </div>
