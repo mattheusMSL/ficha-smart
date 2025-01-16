@@ -7,7 +7,7 @@ import { motion } from "framer-motion";
 const Index = () => {
   // Mock data - would come from API in real app
   const studentData = {
-    name: "João da Silva",
+    name: "João Da Silva",
     ra: "98123456",
     tickets: 0,
     lastPurchase: "2024-02-20",
