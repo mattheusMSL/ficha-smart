@@ -31,7 +31,7 @@ const Index = () => {
             Manage your meal tickets digitally
           </p>
         </motion.div>
-
+        
         <StudentProfile name={studentData.name} ra={studentData.ra} />
 
         <TicketCard
