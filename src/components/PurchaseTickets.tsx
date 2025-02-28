@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,6 +14,7 @@ import {
 } from "@/components/ui/dialog";
 import QRCode from "react-qr-code";
 import { motion } from "framer-motion";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export const PurchaseTickets = ({
   isActive,
@@ -29,8 +31,9 @@ export const PurchaseTickets = ({
   const [expirationDate, setExpirationDate] = useState("");
   const [cvv, setCvv] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
-  const [pixTimer, setPixTimer] = useState<NodeJS.Timeout | null>(null); // Updated type
+  const [pixTimer, setPixTimer] = useState<NodeJS.Timeout | null>(null);
   const { toast } = useToast();
+  const isMobile = useIsMobile();
 
   const PIX_TIMEOUT = 300000; // 5 minutes in milliseconds
 
@@ -139,22 +142,28 @@ export const PurchaseTickets = ({
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
     >
-      <Input
-        type="number"
-        min="1"
-        value={quantity}
-        onChange={(e) => setQuantity(parseInt(e.target.value) || 1)}
-        className="w-full"
-      />
+      <div className={isMobile ? '' : 'max-w-md mx-auto'}>
+        <div className={isMobile ? '' : 'mb-4'}>
+          <Label htmlFor="quantity" className={`block mb-2 ${!isMobile && 'text-lg'}`}>Quantity</Label>
+          <Input
+            id="quantity"
+            type="number"
+            min="1"
+            value={quantity}
+            onChange={(e) => setQuantity(parseInt(e.target.value) || 1)}
+            className={`w-full ${!isMobile && 'h-12 text-lg'}`}
+          />
+        </div>
 
-      <div className="flex justify-end mt-4">
-        <Button
-          onClick={handlePurchase}
-          disabled={!isActive}
-          className="bg-primary hover:bg-primary/90"
-        >
-          Purchase Tickets
-        </Button>
+        <div className={`flex justify-end mt-4 ${!isMobile && 'mt-6'}`}>
+          <Button
+            onClick={handlePurchase}
+            disabled={!isActive}
+            className={`bg-primary hover:bg-primary/90 ${!isMobile && 'text-lg px-6 py-6 h-auto'}`}
+          >
+            Purchase Tickets
+          </Button>
+        </div>
       </div>
 
       {/* Modal de Seleção de Método de Pagamento */}
@@ -162,9 +171,9 @@ export const PurchaseTickets = ({
         open={showPaymentMethodDialog}
         onOpenChange={setShowPaymentMethodDialog}
       >
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className={isMobile ? "sm:max-w-md" : "sm:max-w-xl"}>
           <DialogHeader>
-            <DialogTitle>Select Payment Method</DialogTitle>
+            <DialogTitle className={!isMobile ? "text-2xl" : ""}>Select Payment Method</DialogTitle>
           </DialogHeader>
           <RadioGroup
             value={paymentMethod}
@@ -172,19 +181,22 @@ export const PurchaseTickets = ({
             className="space-y-2 mt-4"
           >
             <div className="flex items-center space-x-2">
-              <RadioGroupItem value="credit" id="credit" />
-              <Label htmlFor="credit">Credit Card</Label>
+              <RadioGroupItem value="credit" id="credit" className={!isMobile ? "h-5 w-5" : ""} />
+              <Label htmlFor="credit" className={!isMobile ? "text-lg" : ""}>Credit Card</Label>
             </div>
             <div className="flex items-center space-x-2">
-              <RadioGroupItem value="debit" id="debit" />
-              <Label htmlFor="debit">Debit Card</Label>
+              <RadioGroupItem value="debit" id="debit" className={!isMobile ? "h-5 w-5" : ""} />
+              <Label htmlFor="debit" className={!isMobile ? "text-lg" : ""}>Debit Card</Label>
             </div>
             <div className="flex items-center space-x-2">
-              <RadioGroupItem value="pix" id="pix" />
-              <Label htmlFor="pix">PIX</Label>
+              <RadioGroupItem value="pix" id="pix" className={!isMobile ? "h-5 w-5" : ""} />
+              <Label htmlFor="pix" className={!isMobile ? "text-lg" : ""}>PIX</Label>
             </div>
           </RadioGroup>
-          <Button onClick={handleSelectPaymentMethod} className="mt-4 w-full">
+          <Button 
+            onClick={handleSelectPaymentMethod} 
+            className={`mt-4 w-full ${!isMobile && 'text-lg py-6 h-auto'}`}
+          >
             Confirm Payment Method
           </Button>
         </DialogContent>
@@ -192,10 +204,10 @@ export const PurchaseTickets = ({
 
       {/* Modal de Pagamento Completo */}
       <Dialog open={showPaymentDialog} onOpenChange={setShowPaymentDialog}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className={isMobile ? "sm:max-w-md" : "sm:max-w-xl"}>
           <DialogHeader>
-            <DialogTitle>Complete Payment</DialogTitle>
-            <DialogDescription>
+            <DialogTitle className={!isMobile ? "text-2xl" : ""}>Complete Payment</DialogTitle>
+            <DialogDescription className={!isMobile ? "text-lg" : ""}>
               Select a payment method and complete your purchase.
             </DialogDescription>
           </DialogHeader>
@@ -211,7 +223,7 @@ export const PurchaseTickets = ({
                 placeholder="Card Number"
                 value={cardNumber}
                 onChange={(e) => setCardNumber(e.target.value)}
-                className="w-full"
+                className={`w-full mb-4 ${!isMobile && 'h-12 text-lg'}`}
               />
               <div className="flex space-x-4 mt-4">
                 <Input
@@ -219,12 +231,14 @@ export const PurchaseTickets = ({
                   placeholder="Expiration Date (MM/YY)"
                   value={expirationDate}
                   onChange={(e) => setExpirationDate(e.target.value)}
+                  className={!isMobile ? "h-12 text-lg" : ""}
                 />
                 <Input
                   type="text"
                   placeholder="CVV"
                   value={cvv}
                   onChange={(e) => setCvv(e.target.value)}
+                  className={!isMobile ? "h-12 text-lg" : ""}
                 />
               </div>
             </motion.div>
@@ -235,13 +249,16 @@ export const PurchaseTickets = ({
               transition={{ duration: 0.5 }}
               className="text-center"
             >
-              <span className="flex justify-center items-center bg-white p-4 rounded-lg shadow-sm border border-gray-100">
-                <QRCode value="https://www.example.com/pix-payment" />
+              <span className={`flex justify-center items-center bg-white p-4 rounded-lg shadow-sm border border-gray-100 ${!isMobile && 'p-6'}`}>
+                <QRCode 
+                  value="https://www.example.com/pix-payment" 
+                  size={isMobile ? 180 : 240}
+                />
               </span>
-              <p className="text-sm text-gray-500 mt-2">
+              <p className={`text-gray-500 mt-2 ${!isMobile && 'text-lg mt-4'}`}>
                 Scan the QR code to complete your payment.
               </p>
-              <p className="text-xs text-gray-400 mt-2">
+              <p className={`text-gray-400 mt-2 ${isMobile ? 'text-xs' : 'text-sm'}`}>
                 Payment expires in 5 minutes
               </p>
             </motion.div>
@@ -250,7 +267,7 @@ export const PurchaseTickets = ({
           <Button
             onClick={handlePaymentSubmit}
             disabled={isProcessing}
-            className="mt-4 w-full"
+            className={`mt-4 w-full ${!isMobile && 'text-lg py-6 h-auto'}`}
           >
             {isProcessing ? "Processing..." : "Complete Payment"}
           </Button>
