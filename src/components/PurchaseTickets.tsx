@@ -3,7 +3,6 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import {
   Dialog,
@@ -12,9 +11,12 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import QRCode from "react-qr-code";
 import { motion } from "framer-motion";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { validateCardNumber, PIX_TIMEOUT } from "@/utils/paymentUtils";
+import { PaymentMethodSelector } from "@/components/payment/PaymentMethodSelector";
+import { CardPaymentForm } from "@/components/payment/CardPaymentForm";
+import { PixPaymentView } from "@/components/payment/PixPaymentView";
 
 export const PurchaseTickets = ({
   isActive,
@@ -34,28 +36,6 @@ export const PurchaseTickets = ({
   const [pixTimer, setPixTimer] = useState<NodeJS.Timeout | null>(null);
   const { toast } = useToast();
   const isMobile = useIsMobile();
-
-  const PIX_TIMEOUT = 300000; // 5 minutes in milliseconds
-
-  // Card Number Validation (Luhn Algorithm)
-  const validateCardNumber = (cardNumber: string) => {
-    const regex = /^[0-9]{13,19}$/;
-    if (!regex.test(cardNumber)) return false;
-
-    let sum = 0;
-    let shouldDouble = false;
-    for (let i = cardNumber.length - 1; i >= 0; i--) {
-      let digit = parseInt(cardNumber.charAt(i));
-      if (shouldDouble) {
-        digit *= 2;
-        if (digit > 9) digit -= 9;
-      }
-      sum += digit;
-      shouldDouble = !shouldDouble;
-    }
-
-    return sum % 10 === 0;
-  };
 
   // Handle Pix Timer
   const initiatePixPayment = () => {
@@ -166,7 +146,7 @@ export const PurchaseTickets = ({
         </div>
       </div>
 
-      {/* Modal de Seleção de Método de Pagamento */}
+      {/* Payment Method Selection Dialog */}
       <Dialog
         open={showPaymentMethodDialog}
         onOpenChange={setShowPaymentMethodDialog}
@@ -175,34 +155,16 @@ export const PurchaseTickets = ({
           <DialogHeader>
             <DialogTitle className={!isMobile ? "text-2xl" : ""}>Select Payment Method</DialogTitle>
           </DialogHeader>
-          <RadioGroup
-            value={paymentMethod}
-            onValueChange={setPaymentMethod}
-            className="space-y-2 mt-4"
-          >
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="credit" id="credit" className={!isMobile ? "h-5 w-5" : ""} />
-              <Label htmlFor="credit" className={!isMobile ? "text-lg" : ""}>Credit Card</Label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="debit" id="debit" className={!isMobile ? "h-5 w-5" : ""} />
-              <Label htmlFor="debit" className={!isMobile ? "text-lg" : ""}>Debit Card</Label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="pix" id="pix" className={!isMobile ? "h-5 w-5" : ""} />
-              <Label htmlFor="pix" className={!isMobile ? "text-lg" : ""}>PIX</Label>
-            </div>
-          </RadioGroup>
-          <Button 
-            onClick={handleSelectPaymentMethod} 
-            className={`mt-4 w-full ${!isMobile && 'text-lg py-6 h-auto'}`}
-          >
-            Confirm Payment Method
-          </Button>
+          <PaymentMethodSelector 
+            paymentMethod={paymentMethod}
+            setPaymentMethod={setPaymentMethod}
+            onConfirm={handleSelectPaymentMethod}
+            onOpenChange={setShowPaymentMethodDialog}
+          />
         </DialogContent>
       </Dialog>
 
-      {/* Modal de Pagamento Completo */}
+      {/* Payment Details Dialog */}
       <Dialog open={showPaymentDialog} onOpenChange={setShowPaymentDialog}>
         <DialogContent className={isMobile ? "sm:max-w-md" : "sm:max-w-xl"}>
           <DialogHeader>
@@ -212,65 +174,23 @@ export const PurchaseTickets = ({
             </DialogDescription>
           </DialogHeader>
 
-          {paymentMethod === "credit" || paymentMethod === "debit" ? (
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-            >
-              <Input
-                type="text"
-                placeholder="Card Number"
-                value={cardNumber}
-                onChange={(e) => setCardNumber(e.target.value)}
-                className={`w-full mb-4 ${!isMobile && 'h-12 text-lg'}`}
-              />
-              <div className="flex space-x-4 mt-4">
-                <Input
-                  type="text"
-                  placeholder="Expiration Date (MM/YY)"
-                  value={expirationDate}
-                  onChange={(e) => setExpirationDate(e.target.value)}
-                  className={!isMobile ? "h-12 text-lg" : ""}
-                />
-                <Input
-                  type="text"
-                  placeholder="CVV"
-                  value={cvv}
-                  onChange={(e) => setCvv(e.target.value)}
-                  className={!isMobile ? "h-12 text-lg" : ""}
-                />
-              </div>
-            </motion.div>
+          {(paymentMethod === "credit" || paymentMethod === "debit") ? (
+            <CardPaymentForm
+              cardNumber={cardNumber}
+              setCardNumber={setCardNumber}
+              expirationDate={expirationDate}
+              setExpirationDate={setExpirationDate}
+              cvv={cvv}
+              setCvv={setCvv}
+              onSubmit={handlePaymentSubmit}
+              isProcessing={isProcessing}
+            />
           ) : paymentMethod === "pix" ? (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.5 }}
-              className="text-center"
-            >
-              <span className={`flex justify-center items-center bg-white p-4 rounded-lg shadow-sm border border-gray-100 ${!isMobile && 'p-6'}`}>
-                <QRCode 
-                  value="https://www.example.com/pix-payment" 
-                  size={isMobile ? 180 : 240}
-                />
-              </span>
-              <p className={`text-gray-500 mt-2 ${!isMobile && 'text-lg mt-4'}`}>
-                Scan the QR code to complete your payment.
-              </p>
-              <p className={`text-gray-400 mt-2 ${isMobile ? 'text-xs' : 'text-sm'}`}>
-                Payment expires in 5 minutes
-              </p>
-            </motion.div>
+            <PixPaymentView
+              onSubmit={handlePaymentSubmit}
+              isProcessing={isProcessing}
+            />
           ) : null}
-
-          <Button
-            onClick={handlePaymentSubmit}
-            disabled={isProcessing}
-            className={`mt-4 w-full ${!isMobile && 'text-lg py-6 h-auto'}`}
-          >
-            {isProcessing ? "Processing..." : "Complete Payment"}
-          </Button>
         </DialogContent>
       </Dialog>
     </motion.div>
