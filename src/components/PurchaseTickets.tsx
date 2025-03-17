@@ -17,6 +17,7 @@ import { validateCardNumber, PIX_TIMEOUT } from "@/utils/paymentUtils";
 import { PaymentMethodSelector } from "@/components/payment/PaymentMethodSelector";
 import { CardPaymentForm } from "@/components/payment/CardPaymentForm";
 import { PixPaymentView } from "@/components/payment/PixPaymentView";
+import { StripeWrapper } from "@/components/payment/StripeWrapper";
 
 export const PurchaseTickets = ({
   isActive,
@@ -33,32 +34,14 @@ export const PurchaseTickets = ({
   const [expirationDate, setExpirationDate] = useState("");
   const [cvv, setCvv] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
-  const [pixTimer, setPixTimer] = useState<NodeJS.Timeout | null>(null);
   const { toast } = useToast();
   const isMobile = useIsMobile();
-
-  // Handle Pix Timer
-  const initiatePixPayment = () => {
-    if (pixTimer) {
-      clearTimeout(pixTimer); // Clear any existing timer
-    }
-
-    const timer = setTimeout(() => {
-      toast({
-        title: "Error",
-        description: "Pix payment expired. Please try again.",
-        variant: "destructive",
-      });
-      setShowPaymentDialog(false);
-    }, PIX_TIMEOUT);
-
-    setPixTimer(timer); // Store the timer
-  };
+  const ticketPrice = 25; // Base price per ticket in currency units
 
   // Handle payment submission
   const handlePaymentSubmit = () => {
     if (paymentMethod === "credit" || paymentMethod === "debit") {
-      if (!validateCardNumber(cardNumber)) {
+      if (!validateCardNumber(cardNumber.replace(/\s/g, ''))) {
         toast({
           title: "Error",
           description: "Invalid card number. Please check and try again.",
@@ -85,6 +68,12 @@ export const PurchaseTickets = ({
       setIsProcessing(false);
       setShowPaymentDialog(false);
       setTicketCount((prev) => prev + quantity);
+      
+      // Reset form fields
+      setCardNumber("");
+      setExpirationDate("");
+      setCvv("");
+      setPaymentMethod("");
     }, 2000);
   };
 
@@ -111,10 +100,10 @@ export const PurchaseTickets = ({
     }
     setShowPaymentMethodDialog(false);
     setShowPaymentDialog(true);
-    if (paymentMethod === "pix") {
-      initiatePixPayment(); // Start Pix payment timer
-    }
   };
+
+  // Calculate total amount
+  const totalAmount = quantity * ticketPrice;
 
   return (
     <motion.div
@@ -133,6 +122,12 @@ export const PurchaseTickets = ({
             onChange={(e) => setQuantity(parseInt(e.target.value) || 1)}
             className={`w-full ${!isMobile && 'h-12 text-lg'}`}
           />
+        </div>
+
+        <div className="mt-4">
+          <p className={`font-medium ${!isMobile && 'text-lg'}`}>
+            Total: ${totalAmount.toFixed(2)}
+          </p>
         </div>
 
         <div className={`flex justify-end mt-4 ${!isMobile && 'mt-6'}`}>
@@ -170,27 +165,32 @@ export const PurchaseTickets = ({
           <DialogHeader>
             <DialogTitle className={!isMobile ? "text-2xl" : ""}>Complete Payment</DialogTitle>
             <DialogDescription className={!isMobile ? "text-lg" : ""}>
-              Select a payment method and complete your purchase.
+              Total: ${totalAmount.toFixed(2)}
             </DialogDescription>
           </DialogHeader>
 
-          {(paymentMethod === "credit" || paymentMethod === "debit") ? (
-            <CardPaymentForm
-              cardNumber={cardNumber}
-              setCardNumber={setCardNumber}
-              expirationDate={expirationDate}
-              setExpirationDate={setExpirationDate}
-              cvv={cvv}
-              setCvv={setCvv}
-              onSubmit={handlePaymentSubmit}
-              isProcessing={isProcessing}
-            />
-          ) : paymentMethod === "pix" ? (
-            <PixPaymentView
-              onSubmit={handlePaymentSubmit}
-              isProcessing={isProcessing}
-            />
-          ) : null}
+          <StripeWrapper>
+            {(paymentMethod === "credit" || paymentMethod === "debit") ? (
+              <CardPaymentForm
+                cardNumber={cardNumber}
+                setCardNumber={setCardNumber}
+                expirationDate={expirationDate}
+                setExpirationDate={setExpirationDate}
+                cvv={cvv}
+                setCvv={setCvv}
+                onSubmit={handlePaymentSubmit}
+                isProcessing={isProcessing}
+                paymentMethod={paymentMethod}
+                amount={totalAmount}
+              />
+            ) : paymentMethod === "pix" ? (
+              <PixPaymentView
+                onSubmit={handlePaymentSubmit}
+                isProcessing={isProcessing}
+                amount={totalAmount}
+              />
+            ) : null}
+          </StripeWrapper>
         </DialogContent>
       </Dialog>
     </motion.div>
